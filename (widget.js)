@@ -1,0 +1,63 @@
+// Función para obtener el número de espectadores de Twitch
+async function getTwitchViewers() {
+    const userName = 'tu_usuario_twitch'; // Reemplaza con tu nombre de usuario de Twitch
+    const clientId = 'tu_client_id_twitch'; // Reemplaza con tu Client ID de Twitch
+    const oauthToken = 'tu_oauth_token_twitch'; // Reemplaza con tu OAuth Token de Twitch
+    const response = await fetch(`https://api.twitch.tv/helix/streams?user_login=${userName}`, {
+        headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${oauthToken}`
+        }
+    });
+    const data = await response.json();
+    return data.data[0] ? data.data[0].viewer_count : 0;
+}
+
+// Función para obtener el número de espectadores de YouTube
+async function getYouTubeViewers() {
+    const videoId = 'tu_video_id_youtube'; // Reemplaza con tu ID de video en YouTube
+    const apiKey = 'tu_api_key_youtube'; // Reemplaza con tu API Key de YouTube
+    const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${apiKey}`);
+    const data = await response.json();
+    return data.items[0] ? data.items[0].liveStreamingDetails.concurrentViewers : 0;
+}
+
+// Función para obtener el número de espectadores de Kick
+async function getKickViewers() {
+    const streamId = 'tu_stream_id_kick'; // Reemplaza con tu ID de stream en Kick
+    const response = await fetch(`https://api.kick.com/v1/streams/${streamId}`);
+    const data = await response.json();
+    return data.viewer_count || 0;
+}
+
+// Función para obtener el número de espectadores de TikTok (scraping no oficial)
+async function getTikTokViewers() {
+    const tiktokId = 'tu_usuario_tiktok'; // Reemplaza con tu nombre de usuario de TikTok
+    // Esto es un ejemplo básico; idealmente, deberías usar una API o un scraper adecuado
+    const response = await fetch(`https://www.tiktok.com/@${tiktokId}`);
+    const html = await response.text();
+    const viewerCount = html.match(/"viewer_count":(\d+)/);
+    return viewerCount ? viewerCount[1] : 0;
+}
+
+// Función principal para actualizar los espectadores
+async function updateViewers() {
+    const twitchViewers = await getTwitchViewers();
+    const youtubeViewers = await getYouTubeViewers();
+    const kickViewers = await getKickViewers();
+    const tiktokViewers = await getTikTokViewers();
+
+    // Mostrar los resultados en el navegador
+    document.getElementById("viewerCount").innerHTML = `
+        Twitch: ${twitchViewers} espectadores<br>
+        YouTube: ${youtubeViewers} espectadores<br>
+        Kick: ${kickViewers} espectadores<br>
+        TikTok: ${tiktokViewers} espectadores
+    `;
+}
+
+// Llamada inicial para actualizar los viewers
+updateViewers();
+
+// Actualizar cada 30 segundos
+setInterval(updateViewers, 30000);
